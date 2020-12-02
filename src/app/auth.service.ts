@@ -1,12 +1,10 @@
-import { Observable, Observer } from "rxjs";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { OktaAuth } from "@okta/okta-auth-js";
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
-
-  CLIENT_ID = "0oa4jk1fjlcnzyIqq357";
+  CLIENT_ID = "0oa2gfh9tywuM1Psb357";
   ISSUER = "https://auth.casualtyanalytics.co.uk/oauth2/default";
   LOGIN_REDIRECT_URI = "http://localhost:4200/callback";
   LOGOUT_REDIRECT_URI = "http://localhost:4200/";
@@ -15,54 +13,31 @@ export class AuthService {
     clientId: this.CLIENT_ID,
     issuer: this.ISSUER,
     redirectUri: this.LOGIN_REDIRECT_URI,
-    pkce: true
+    pkce: true,
   });
 
-  $isAuthenticated: Observable<boolean>;
-  private observer: Observer<boolean>;
-  constructor(private router: Router) {
-    this.$isAuthenticated = new Observable((observer: Observer<boolean>) => {
-      this.observer = observer;
-      this.isAuthenticated().then((val) => {
-        observer.next(val);
-      });
-    });
-  }
+  constructor(private router: Router) {}
 
-  async isAuthenticated() {
-    // Checks if there is a current accessToken in the TokenManger.
+  async isAuthenticated(): Promise<boolean> {
     return !!(await this.oktaAuth.tokenManager.get("accessToken"));
   }
 
-  login(originalUrl?) {
-    // Save current URL before redirect
-    sessionStorage.setItem("okta-app-url", originalUrl || this.router.url);
-
-    // Launches the login redirect.
+  login(): void {
     this.oktaAuth.token.getWithRedirect({
       scopes: ["tenant/default_client"],
     });
   }
 
-  async handleAuthentication() {
+  async handleAuthentication(): Promise<void> {
     const tokenContainer = await this.oktaAuth.token.parseFromUrl();
-
-    this.oktaAuth.tokenManager.add("idToken", tokenContainer.tokens.idToken);
     this.oktaAuth.tokenManager.add(
       "accessToken",
       tokenContainer.tokens.accessToken
     );
-
-    if (await this.isAuthenticated()) {
-      this.observer.next(true);
-    }
-
-    // Retrieve the saved URL and navigate back
-    const url = sessionStorage.getItem("okta-app-url");
-    this.router.navigateByUrl(url);
+    this.router.navigateByUrl("/");
   }
 
-  async logout() {
+  async logout(): Promise<void> {
     await this.oktaAuth.signOut({
       postLogoutRedirectUri: this.LOGOUT_REDIRECT_URI,
     });

@@ -7,10 +7,9 @@ import { AuthService } from "../auth.service";
   styleUrls: ["./callback.component.scss"],
 })
 export class CallbackComponent implements OnInit {
-  constructor(private okta: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    // Handles the response from Okta and parses tokens
-    this.okta.handleAuthentication();
+      this.authService.handleAuthentication();
   }
 }

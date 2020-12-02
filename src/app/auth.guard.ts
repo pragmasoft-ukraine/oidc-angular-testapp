@@ -6,16 +6,13 @@ import { AuthService } from "./auth.service";
   providedIn: "root",
 })
 export class AuthGuard implements CanLoad {
-  constructor(private okta: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   async canLoad() {
-    const authenticated = await this.okta.isAuthenticated();
-    if (authenticated) {
+    if (await this.authService.isAuthenticated()) {
       return true;
     }
-
-    // Redirect to login flow.
-    this.okta.login();
+    this.authService.login();
     return false;
   }
 }
